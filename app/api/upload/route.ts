@@ -1,60 +1,78 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const formData = await req.formData()
-    const file = formData.get('file') as File | null
-    const name = formData.get('name') as string || 'Untitled Recording'
-    const loomUrl = formData.get('loomUrl') as string | null
+    const formData = await req.formData();
+    const file = formData.get("file") as File | null;
+    const name = (formData.get("name") as string) || "Untitled Recording";
+    const loomUrl = formData.get("loomUrl") as string | null;
 
     if (!file && !loomUrl) {
-      return NextResponse.json({ error: 'No file or Loom URL provided' }, { status: 400 })
+      return NextResponse.json(
+        { error: "No file or Loom URL provided" },
+        { status: 400 },
+      );
     }
 
-    const supabase = createServerClient()
+    const supabase = createServerClient();
 
     // Calculate estimated duration
-    let duration = 0
+    let duration = 0;
     if (file) {
-      duration = Math.min(90, file.size / (1024 * 1024) * 5)
+      duration = Math.min(90, (file.size / (1024 * 1024)) * 5);
     }
 
     // Create project record
     const { data: project, error } = await supabase
-      .from('projects')
+      .from("projects")
       .insert({
         name,
-        status: 'processing',
+        status: "processing",
         video_duration_seconds: duration,
-        video_url: loomUrl || 'file://' + (file?.name || 'recording'),
+        video_url: loomUrl || "file://" + (file?.name || "recording"),
       })
-      .select('*')
-      .single()
+      .select("*")
+      .single();
 
-    if (error) throw error
+    if (error) {
+      console.error("DB error:", error);
+      return NextResponse.json(
+        { error: `Database error: ${error.message}` },
+        { status: 500 },
+      );
+    }
 
-    // If it's a real file, upload to Supabase Storage
+    // Upload to storage (non-critical — graceful skip if bucket missing)
     if (file) {
-      const buffer = await file.arrayBuffer()
-      const { error: uploadError } = await supabase.storage
-        .from('recordings')
-        .upload(`${project.id}/${file.name}`, buffer, {
-          contentType: file.type,
-          upsert: true,
-        })
-
-      if (!uploadError) {
-        const { data: urlData } = supabase.storage
-          .from('recordings')
-          .getPublicUrl(`${project.id}/${file.name}`)
-        await supabase.from('projects').update({ video_url: urlData.publicUrl }).eq('id', project.id)
+      try {
+        const buffer = await file.arrayBuffer();
+        const { error: uploadError } = await supabase.storage
+          .from("recordings")
+          .upload(`${project.id}/${file.name}`, buffer, {
+            contentType: file.type,
+            upsert: true,
+          });
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage
+            .from("recordings")
+            .getPublicUrl(`${project.id}/${file.name}`);
+          await supabase
+            .from("projects")
+            .update({ video_url: urlData.publicUrl })
+            .eq("id", project.id);
+        }
+      } catch (_) {
+        console.warn("Storage upload skipped (bucket may not exist)");
       }
     }
 
-    return NextResponse.json({ project }, { status: 201 })
-  } catch (err) {
-    console.error('Upload error:', err)
-    return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
+    return NextResponse.json({ project }, { status: 201 });
+  } catch (err: any) {
+    console.error("Upload error:", err);
+    return NextResponse.json(
+      { error: `Upload failed: ${err?.message || err}` },
+      { status: 500 },
+    );
   }
 }

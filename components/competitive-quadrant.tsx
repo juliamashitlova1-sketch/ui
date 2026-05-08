@@ -1,57 +1,111 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { cn } from "@/lib/utils"
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/context";
 
 type Competitor = {
-  id: string
-  name: string
+  id: string;
+  name: string;
   // 0 = Static (single frame) → 100 = Dynamic (flows / interactions)
-  x: number
+  x: number;
   // 0 = Designer-focused → 100 = Developer-focused
-  y: number
-  note: string
-  highlighted?: boolean
-}
-
-const COMPETITORS: Competitor[] = [
-  { id: "figma-make", name: "Figma Make", x: 18, y: 22, note: "Figma → code, designer-first" },
-  { id: "anima", name: "Anima", x: 14, y: 30, note: "Figma plugin, design handoff" },
-  { id: "galileo", name: "Galileo", x: 10, y: 14, note: "Prompt → UI mocks" },
-  { id: "uizard", name: "Uizard", x: 22, y: 12, note: "Sketch / wireframe → mock" },
-  { id: "locofy", name: "Locofy", x: 32, y: 62, note: "Figma → React/Tailwind" },
-  { id: "builder", name: "Builder.io", x: 36, y: 58, note: "Visual Copilot, headless CMS" },
-  { id: "v0", name: "v0", x: 44, y: 78, note: "Prompt + screenshot → app" },
-  { id: "bolt", name: "Bolt.new", x: 50, y: 80, note: "Full-stack from prompt" },
-  { id: "lovable", name: "Lovable", x: 52, y: 76, note: "Full-stack from prompt" },
-  { id: "same", name: "Same.dev", x: 56, y: 70, note: "Pixel-clone existing sites" },
-  {
-    id: "pixelforge",
-    name: "PixelForge",
-    x: 86,
-    y: 84,
-    note: "Recording → interactive prototype",
-    highlighted: true,
-  },
-]
+  y: number;
+  note: string;
+  highlighted?: boolean;
+};
 
 export function CompetitiveQuadrant() {
-  const [hovered, setHovered] = useState<string | null>(null)
+  const { t } = useI18n();
+  const [hovered, setHovered] = useState<string | null>(null);
+
+  const COMPETITORS: Competitor[] = [
+    {
+      id: "figma-make",
+      name: "Figma Make",
+      x: 18,
+      y: 22,
+      note: t.quadrant.competitors["figma-make"],
+    },
+    {
+      id: "anima",
+      name: "Anima",
+      x: 14,
+      y: 30,
+      note: t.quadrant.competitors["anima"],
+    },
+    {
+      id: "galileo",
+      name: "Galileo",
+      x: 10,
+      y: 14,
+      note: t.quadrant.competitors["galileo"],
+    },
+    {
+      id: "uizard",
+      name: "Uizard",
+      x: 22,
+      y: 12,
+      note: t.quadrant.competitors["uizard"],
+    },
+    {
+      id: "locofy",
+      name: "Locofy",
+      x: 32,
+      y: 62,
+      note: t.quadrant.competitors["locofy"],
+    },
+    {
+      id: "builder",
+      name: "Builder.io",
+      x: 36,
+      y: 58,
+      note: t.quadrant.competitors["builder"],
+    },
+    { id: "v0", name: "v0", x: 44, y: 78, note: t.quadrant.competitors["v0"] },
+    {
+      id: "bolt",
+      name: "Bolt.new",
+      x: 50,
+      y: 80,
+      note: t.quadrant.competitors["bolt"],
+    },
+    {
+      id: "lovable",
+      name: "Lovable",
+      x: 52,
+      y: 76,
+      note: t.quadrant.competitors["lovable"],
+    },
+    {
+      id: "same",
+      name: "Same.dev",
+      x: 56,
+      y: 70,
+      note: t.quadrant.competitors["same"],
+    },
+    {
+      id: "pixelforge",
+      name: "PixelForge",
+      x: 86,
+      y: 84,
+      note: t.quadrant.competitors["pixelforge"],
+      highlighted: true,
+    },
+  ];
 
   return (
     <section id="landscape" className="border-b border-border/60 bg-background">
       <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
         <div className="mx-auto max-w-2xl text-center">
           <p className="font-mono text-xs uppercase tracking-wider text-primary">
-            The landscape
+            {t.quadrant.label}
           </p>
           <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight md:text-4xl">
-            Where everyone else is fighting. And where we&apos;re not.
+            {t.quadrant.heading}
           </h2>
           <p className="mt-4 text-pretty leading-relaxed text-muted-foreground">
-            The static / developer-focused quadrant is a bloodbath. The
-            dynamic / developer-focused quadrant is empty. That&apos;s where
-            PixelForge lives.
+            {t.quadrant.description}
           </p>
         </div>
 
@@ -60,7 +114,10 @@ export function CompetitiveQuadrant() {
           <div className="relative">
             <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-border bg-card/40">
               {/* grid bg */}
-              <div className="absolute inset-0 grid-bg opacity-40" aria-hidden="true" />
+              <div
+                className="absolute inset-0 grid-bg opacity-40"
+                aria-hidden="true"
+              />
 
               {/* axes (dashed center lines) */}
               <div
@@ -81,32 +138,32 @@ export function CompetitiveQuadrant() {
               {/* Quadrant labels */}
               <QuadrantLabel
                 position="top-left"
-                title="Static · Developer"
-                note="Crowded · Locofy, Builder, v0, Bolt"
+                title={t.quadrant.quadrants.topLeft.title}
+                note={t.quadrant.quadrants.topLeft.note}
               />
               <QuadrantLabel
                 position="top-right"
-                title="Dynamic · Developer"
-                note="Open territory"
+                title={t.quadrant.quadrants.topRight.title}
+                note={t.quadrant.quadrants.topRight.note}
                 highlighted
               />
               <QuadrantLabel
                 position="bottom-left"
-                title="Static · Designer"
-                note="Figma Make, Anima, Galileo"
+                title={t.quadrant.quadrants.bottomLeft.title}
+                note={t.quadrant.quadrants.bottomLeft.note}
               />
               <QuadrantLabel
                 position="bottom-right"
-                title="Dynamic · Designer"
-                note="Mostly motion / prototyping tools"
+                title={t.quadrant.quadrants.bottomRight.title}
+                note={t.quadrant.quadrants.bottomRight.note}
               />
 
               {/* axis labels */}
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                Static frame → Dynamic flow
+                {t.quadrant.xAxis}
               </div>
               <div className="absolute left-3 top-1/2 -translate-y-1/2 -rotate-90 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                Designer → Developer
+                {t.quadrant.yAxis}
               </div>
 
               {/* Dots */}
@@ -125,12 +182,10 @@ export function CompetitiveQuadrant() {
           <div className="flex flex-col gap-3">
             <div className="rounded-xl border border-border bg-card/40 p-4">
               <p className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-                Read the chart
+                {t.quadrant.readChart}
               </p>
               <p className="mt-2 text-sm leading-relaxed text-foreground/80">
-                X-axis: how much of the <span className="text-foreground">flow</span>{" "}
-                the tool understands. Y-axis: who the output serves —
-                designer (mocks) or developer (production code).
+                {t.quadrant.readChartDesc}
               </p>
             </div>
 
@@ -149,7 +204,9 @@ export function CompetitiveQuadrant() {
                   <span
                     className={cn(
                       "mt-1.5 h-2 w-2 shrink-0 rounded-full",
-                      c.highlighted ? "bg-primary ring-2 ring-primary/30" : "bg-muted-foreground/50",
+                      c.highlighted
+                        ? "bg-primary ring-2 ring-primary/30"
+                        : "bg-muted-foreground/50",
                     )}
                     aria-hidden="true"
                   />
@@ -173,7 +230,7 @@ export function CompetitiveQuadrant() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 function QuadrantLabel({
@@ -182,17 +239,17 @@ function QuadrantLabel({
   note,
   highlighted,
 }: {
-  position: "top-left" | "top-right" | "bottom-left" | "bottom-right"
-  title: string
-  note: string
-  highlighted?: boolean
+  position: "top-left" | "top-right" | "bottom-left" | "bottom-right";
+  title: string;
+  note: string;
+  highlighted?: boolean;
 }) {
   const positionClasses: Record<typeof position, string> = {
     "top-left": "top-4 left-4 text-left",
     "top-right": "top-4 right-4 text-right",
     "bottom-left": "bottom-10 left-4 text-left",
     "bottom-right": "bottom-10 right-4 text-right",
-  }
+  };
   return (
     <div className={cn("absolute max-w-[42%]", positionClasses[position])}>
       <p
@@ -212,7 +269,7 @@ function QuadrantLabel({
         {note}
       </p>
     </div>
-  )
+  );
 }
 
 function Dot({
@@ -220,13 +277,13 @@ function Dot({
   hovered,
   onHover,
 }: {
-  competitor: Competitor
-  hovered: boolean
-  onHover: (h: boolean) => void
+  competitor: Competitor;
+  hovered: boolean;
+  onHover: (h: boolean) => void;
 }) {
   // y is flipped because CSS top grows downward
-  const left = `${competitor.x}%`
-  const top = `${100 - competitor.y}%`
+  const left = `${competitor.x}%`;
+  const top = `${100 - competitor.y}%`;
 
   return (
     <div
@@ -263,5 +320,5 @@ function Dot({
         </span>
       </div>
     </div>
-  )
+  );
 }

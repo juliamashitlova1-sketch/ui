@@ -1,56 +1,59 @@
-import { Upload, Brain, GitBranch, PlayCircle } from "lucide-react"
+"use client";
 
-const STEPS = [
-  {
-    n: "01",
-    icon: Upload,
-    title: "Drop a recording",
-    description:
-      "Screen recording, Loom link, or click-through video. 5 to 90 seconds works best. No annotations needed — just record yourself using the thing.",
-    code: "input.mov  →  PixelForge",
-  },
-  {
-    n: "02",
-    icon: Brain,
-    title: "Flow extraction",
-    description:
-      "A vision model segments frames into discrete UI states. A reasoning model labels transitions, intents, and async boundaries — building a typed state machine.",
-    code: "states: 7  ·  transitions: 9  ·  effects: 3",
-  },
-  {
-    n: "03",
-    icon: GitBranch,
-    title: "Edit the timeline",
-    description:
-      "Inspect every detected state on a horizontal timeline. Rename, merge, branch, or add states the model missed. This is the source of truth.",
-    code: "state.modal_open  →  Slide-up · 240ms · ease-out",
-  },
-  {
-    n: "04",
-    icon: PlayCircle,
-    title: "Ship a working app",
-    description:
-      "Generates production React + Tailwind with proper hooks, state management, optimistic updates, and the loading/error/empty states the original had — or should have had.",
-    code: "→ TaskList.tsx  ·  AddTaskModal.tsx  ·  api.ts",
-  },
-]
+import { Upload, Brain, GitBranch, PlayCircle } from "lucide-react";
+import { useI18n } from "@/lib/i18n/context";
 
 export function HowItWorks() {
+  const { t } = useI18n();
+  const STEPS = [
+    {
+      n: "01",
+      icon: Upload,
+      title: t.howItWorks.steps.drop.title,
+      description: t.howItWorks.steps.drop.description,
+      code: t.howItWorks.steps.drop.code,
+    },
+    {
+      n: "02",
+      icon: Brain,
+      title: t.howItWorks.steps.extract.title,
+      description: t.howItWorks.steps.extract.description,
+      code: t.howItWorks.steps.extract.code,
+    },
+    {
+      n: "03",
+      icon: GitBranch,
+      title: t.howItWorks.steps.edit.title,
+      description: t.howItWorks.steps.edit.description,
+      code: t.howItWorks.steps.edit.code,
+    },
+    {
+      n: "04",
+      icon: PlayCircle,
+      title: t.howItWorks.steps.ship.title,
+      description: t.howItWorks.steps.ship.description,
+      code: t.howItWorks.steps.ship.code,
+    },
+  ];
+
   return (
-    <section id="how-it-works" className="border-b border-border/60 bg-background">
+    <section
+      id="how-it-works"
+      className="border-b border-border/60 bg-background"
+    >
       <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
         <div className="mx-auto max-w-2xl text-center">
           <p className="font-mono text-xs uppercase tracking-wider text-primary">
-            How Flow Capture works
+            {t.howItWorks.label}
           </p>
           <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight md:text-4xl">
-            Recording in. Working app out. Four steps.
+            {t.howItWorks.heading}
           </h2>
         </div>
 
         <div className="mt-16 grid gap-px overflow-hidden rounded-2xl border border-border bg-border md:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((s) => {
-            const Icon = s.icon
+            const Icon = s.icon;
             return (
               <div
                 key={s.n}
@@ -74,10 +77,10 @@ export function HowItWorks() {
                   {s.code}
                 </div>
               </div>
-            )
+            );
           })}
         </div>
       </div>
     </section>
-  )
+  );
 }

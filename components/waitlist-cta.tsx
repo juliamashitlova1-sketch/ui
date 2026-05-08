@@ -1,28 +1,52 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { ArrowRight, Check } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { useState } from "react";
+import { ArrowRight, Check, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useI18n } from "@/lib/i18n/context";
 
 export function WaitlistCta() {
-  const [email, setEmail] = useState("")
-  const [role, setRole] = useState<string | null>(null)
-  const [submitted, setSubmitted] = useState(false)
+  const { t } = useI18n();
 
-  const roles = [
-    "Frontend engineer",
-    "Designer",
-    "Founder",
-    "PM",
-    "Other",
-  ] as const
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!email) return
-    // TODO: wire to backend
-    setSubmitted(true)
+  const roles = t.waitlist.roles as readonly string[];
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email || loading) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, role }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Something went wrong");
+      }
+
+      setSubmitted(true);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to join. Please try again.",
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -38,14 +62,13 @@ export function WaitlistCta() {
       <div className="relative mx-auto max-w-3xl px-6 py-24 md:py-32">
         <div className="text-center">
           <p className="font-mono text-xs uppercase tracking-wider text-primary">
-            Private beta · Q2 2026
+            {t.waitlist.badge}
           </p>
           <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight md:text-5xl">
-            Be early. Help shape Flow Capture.
+            {t.waitlist.heading}
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-pretty leading-relaxed text-muted-foreground">
-            We&apos;re onboarding the first 200 teams personally. You&apos;ll get
-            early access, founder-level support, and lifetime pro pricing.
+            {t.waitlist.description}
           </p>
         </div>
 
@@ -56,9 +79,9 @@ export function WaitlistCta() {
                 <Check className="h-4 w-4 text-primary" aria-hidden="true" />
               </span>
               <span>
-                You&apos;re on the list.{" "}
+                {t.waitlist.success}{" "}
                 <span className="text-muted-foreground">
-                  We&apos;ll be in touch within a week.
+                  {t.waitlist.successNote}
                 </span>
               </span>
             </div>
@@ -68,23 +91,39 @@ export function WaitlistCta() {
                 <Input
                   type="email"
                   required
-                  placeholder="you@company.com"
+                  placeholder={t.waitlist.emailPlaceholder}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   aria-label="Email address"
                   className="h-12 flex-1 border-border bg-card/40 text-base placeholder:text-muted-foreground/60 focus-visible:border-primary"
                 />
-                <Button type="submit" size="lg" className="group h-12 gap-2 px-6">
-                  Request access
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="group h-12 gap-2 px-6"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      {t.waitlist.joining}
+                    </>
+                  ) : (
+                    <>
+                      {t.waitlist.cta}
+                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                    </>
+                  )}
                 </Button>
               </div>
+
+              {error && <p className="text-sm text-destructive">{error}</p>}
 
               <fieldset>
                 <legend className="sr-only">Your role</legend>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   <span className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-                    I&apos;m a
+                    {t.waitlist.roleLabel}
                   </span>
                   {roles.map((r) => (
                     <button
@@ -107,13 +146,13 @@ export function WaitlistCta() {
         </div>
 
         <div className="mx-auto mt-10 flex max-w-xl flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono text-[11px] text-muted-foreground">
-          <span>No spam</span>
+          <span>{t.waitlist.noSpam}</span>
           <span className="text-border">•</span>
-          <span>Unsubscribe anytime</span>
+          <span>{t.waitlist.unsubscribe}</span>
           <span className="text-border">•</span>
-          <span>Onboarded teams keep lifetime pricing</span>
+          <span>{t.waitlist.lifetimePricing}</span>
         </div>
       </div>
     </section>
-  )
+  );
 }

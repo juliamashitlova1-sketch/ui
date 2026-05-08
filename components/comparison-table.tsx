@@ -1,49 +1,98 @@
-import { Check, Minus } from "lucide-react"
-import { cn } from "@/lib/utils"
-
-const TOOLS = ["v0", "Locofy", "Same.dev", "Figma Make", "PixelForge"] as const
-
-const ROWS: { label: string; values: Record<(typeof TOOLS)[number], "yes" | "partial" | "no"> }[] = [
-  {
-    label: "Screenshot → static page",
-    values: { v0: "yes", Locofy: "yes", "Same.dev": "yes", "Figma Make": "yes", PixelForge: "yes" },
-  },
-  {
-    label: "Production React + Tailwind",
-    values: { v0: "yes", Locofy: "yes", "Same.dev": "yes", "Figma Make": "partial", PixelForge: "yes" },
-  },
-  {
-    label: "Recording → multi-state UI",
-    values: { v0: "no", Locofy: "no", "Same.dev": "no", "Figma Make": "no", PixelForge: "yes" },
-  },
-  {
-    label: "Inferred state machine",
-    values: { v0: "no", Locofy: "no", "Same.dev": "no", "Figma Make": "no", PixelForge: "yes" },
-  },
-  {
-    label: "Editable transition timeline",
-    values: { v0: "no", Locofy: "no", "Same.dev": "no", "Figma Make": "no", PixelForge: "yes" },
-  },
-  {
-    label: "Optimistic / async states preserved",
-    values: { v0: "partial", Locofy: "no", "Same.dev": "no", "Figma Make": "no", PixelForge: "yes" },
-  },
-  {
-    label: "Per-state regenerate",
-    values: { v0: "no", Locofy: "no", "Same.dev": "no", "Figma Make": "no", PixelForge: "yes" },
-  },
-]
+"use client";
+import { Check, Minus } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/context";
 
 export function ComparisonTable() {
+  const { t } = useI18n();
+
+  const TOOLS = t.comparison.tools;
+
+  const ROWS: {
+    label: string;
+    values: Record<string, "yes" | "partial" | "no">;
+  }[] = [
+    {
+      label: t.comparison.rows["screenshot-static"],
+      values: {
+        v0: "yes",
+        Locofy: "yes",
+        "Same.dev": "yes",
+        "Figma Make": "yes",
+        PixelForge: "yes",
+      },
+    },
+    {
+      label: t.comparison.rows["production-react"],
+      values: {
+        v0: "yes",
+        Locofy: "yes",
+        "Same.dev": "yes",
+        "Figma Make": "partial",
+        PixelForge: "yes",
+      },
+    },
+    {
+      label: t.comparison.rows["recording-multi-state"],
+      values: {
+        v0: "no",
+        Locofy: "no",
+        "Same.dev": "no",
+        "Figma Make": "no",
+        PixelForge: "yes",
+      },
+    },
+    {
+      label: t.comparison.rows["inferred-state-machine"],
+      values: {
+        v0: "no",
+        Locofy: "no",
+        "Same.dev": "no",
+        "Figma Make": "no",
+        PixelForge: "yes",
+      },
+    },
+    {
+      label: t.comparison.rows["editable-transition-timeline"],
+      values: {
+        v0: "no",
+        Locofy: "no",
+        "Same.dev": "no",
+        "Figma Make": "no",
+        PixelForge: "yes",
+      },
+    },
+    {
+      label: t.comparison.rows["optimistic-async-preserved"],
+      values: {
+        v0: "partial",
+        Locofy: "no",
+        "Same.dev": "no",
+        "Figma Make": "no",
+        PixelForge: "yes",
+      },
+    },
+    {
+      label: t.comparison.rows["per-state-regenerate"],
+      values: {
+        v0: "no",
+        Locofy: "no",
+        "Same.dev": "no",
+        "Figma Make": "no",
+        PixelForge: "yes",
+      },
+    },
+  ];
+
   return (
     <section className="border-b border-border/60 bg-background">
       <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
         <div className="mx-auto max-w-2xl text-center">
           <p className="font-mono text-xs uppercase tracking-wider text-primary">
-            Head to head
+            {t.comparison.label}
           </p>
           <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight md:text-4xl">
-            What no other tool does today
+            {t.comparison.heading}
           </h2>
         </div>
 
@@ -56,20 +105,20 @@ export function ComparisonTable() {
                     scope="col"
                     className="px-6 py-4 text-left font-mono text-[11px] uppercase tracking-widest text-muted-foreground"
                   >
-                    Capability
+                    {t.comparison.capability}
                   </th>
-                  {TOOLS.map((t) => (
+                  {TOOLS.map((tool) => (
                     <th
-                      key={t}
+                      key={tool}
                       scope="col"
                       className={cn(
                         "px-4 py-4 text-center font-mono text-[11px] uppercase tracking-widest",
-                        t === "PixelForge"
+                        tool === "PixelForge"
                           ? "text-primary"
                           : "text-muted-foreground",
                       )}
                     >
-                      {t}
+                      {tool}
                     </th>
                   ))}
                 </tr>
@@ -83,16 +132,21 @@ export function ComparisonTable() {
                       i % 2 === 1 && "bg-muted/10",
                     )}
                   >
-                    <td className="px-6 py-4 text-foreground/90">{row.label}</td>
-                    {TOOLS.map((t) => (
+                    <td className="px-6 py-4 text-foreground/90">
+                      {row.label}
+                    </td>
+                    {TOOLS.map((toolName) => (
                       <td
-                        key={t}
+                        key={toolName}
                         className={cn(
                           "px-4 py-4 text-center",
-                          t === "PixelForge" && "bg-primary/5",
+                          toolName === "PixelForge" && "bg-primary/5",
                         )}
                       >
-                        <Mark v={row.values[t]} highlighted={t === "PixelForge"} />
+                        <Mark
+                          v={row.values[toolName]}
+                          highlighted={toolName === "PixelForge"}
+                        />
                       </td>
                     ))}
                   </tr>
@@ -103,15 +157,15 @@ export function ComparisonTable() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 function Mark({
   v,
   highlighted,
 }: {
-  v: "yes" | "partial" | "no"
-  highlighted: boolean
+  v: "yes" | "partial" | "no";
+  highlighted: boolean;
 }) {
   if (v === "yes") {
     return (
@@ -131,7 +185,7 @@ function Mark({
           )}
         />
       </span>
-    )
+    );
   }
   if (v === "partial") {
     return (
@@ -141,7 +195,7 @@ function Mark({
       >
         ~
       </span>
-    )
+    );
   }
   return (
     <span
@@ -150,5 +204,5 @@ function Mark({
     >
       <Minus className="h-3.5 w-3.5" />
     </span>
-  )
+  );
 }

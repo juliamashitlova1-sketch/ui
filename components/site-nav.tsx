@@ -1,8 +1,14 @@
-import Link from "next/link"
-import { Flame } from "lucide-react"
-import { Button } from "@/components/ui/button"
+"use client";
+
+import Link from "next/link";
+import { Flame } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n/context";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 export function SiteNav() {
+  const { t } = useI18n();
+
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
@@ -14,7 +20,7 @@ export function SiteNav() {
             PixelForge
           </span>
           <span className="ml-2 rounded-full border border-border bg-muted/40 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-            Beta
+            {t.nav.beta}
           </span>
         </Link>
 
@@ -23,19 +29,19 @@ export function SiteNav() {
             href="#flow-capture"
             className="text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
-            Flow Capture
+            {t.nav.flowCapture}
           </Link>
           <Link
             href="#how-it-works"
             className="text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
-            How it works
+            {t.nav.howItWorks}
           </Link>
           <Link
             href="#landscape"
             className="text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
-            Landscape
+            {t.nav.landscape}
           </Link>
           <Link
             href="/prd"
@@ -46,17 +52,18 @@ export function SiteNav() {
         </nav>
 
         <div className="flex items-center gap-3">
+          <LanguageSwitcher />
           <Link
             href="#waitlist"
             className="hidden text-sm text-muted-foreground transition-colors hover:text-foreground sm:inline"
           >
-            Sign in
+            {t.nav.signIn}
           </Link>
           <Button asChild size="sm" className="font-medium">
-            <Link href="#waitlist">Join waitlist</Link>
+            <Link href="#waitlist">{t.nav.joinWaitlist}</Link>
           </Button>
         </div>
       </div>
     </header>
-  )
+  );
 }

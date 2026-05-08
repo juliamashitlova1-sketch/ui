@@ -1,7 +1,12 @@
-import Link from "next/link"
-import { Flame } from "lucide-react"
+"use client";
+
+import Link from "next/link";
+import { Flame } from "lucide-react";
+import { useI18n } from "@/lib/i18n/context";
 
 export function SiteFooter() {
+  const { t } = useI18n();
+
   return (
     <footer className="bg-background">
       <div className="mx-auto max-w-7xl px-6 py-14">
@@ -16,57 +21,56 @@ export function SiteFooter() {
               </span>
             </Link>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Recording → interactive prototype. The first design-to-code tool
-              that understands flows, not just frames.
+              {t.footer.description}
             </p>
           </div>
 
           <FooterCol
-            title="Product"
+            title={t.footer.product}
             items={[
-              { label: "Flow Capture", href: "#flow-capture" },
-              { label: "How it works", href: "#how-it-works" },
-              { label: "Landscape", href: "#landscape" },
-              { label: "PRD", href: "/prd" },
+              { label: t.footer.flowCapture, href: "#flow-capture" },
+              { label: t.footer.howItWorks, href: "#how-it-works" },
+              { label: t.footer.landscape, href: "#landscape" },
+              { label: t.footer.prd, href: "/prd" },
             ]}
           />
           <FooterCol
-            title="Company"
+            title={t.footer.company}
             items={[
-              { label: "Waitlist", href: "#waitlist" },
-              { label: "Changelog", href: "#" },
-              { label: "Contact", href: "mailto:hi@pixelforge.app" },
+              { label: t.footer.waitlist, href: "#waitlist" },
+              { label: t.footer.changelog, href: "#" },
+              { label: t.footer.contact, href: "mailto:hi@pixelforge.app" },
             ]}
           />
           <FooterCol
-            title="Resources"
+            title={t.footer.resources}
             items={[
-              { label: "Docs", href: "#" },
-              { label: "Blog", href: "#" },
-              { label: "Twitter / X", href: "#" },
+              { label: t.footer.docs, href: "#" },
+              { label: t.footer.blog, href: "#" },
+              { label: t.footer.twitter, href: "#" },
             ]}
           />
         </div>
 
         <div className="mt-12 flex flex-col items-start justify-between gap-2 border-t border-border pt-6 md:flex-row md:items-center">
           <p className="font-mono text-[11px] text-muted-foreground">
-            © {new Date().getFullYear()} PixelForge. Built for people who ship.
+            {t.site.footer.replace("{year}", String(new Date().getFullYear()))}
           </p>
           <p className="font-mono text-[11px] text-muted-foreground">
-            v0.1 · landing for early-access funnel
+            {t.site.version}
           </p>
         </div>
       </div>
     </footer>
-  )
+  );
 }
 
 function FooterCol({
   title,
   items,
 }: {
-  title: string
-  items: { label: string; href: string }[]
+  title: string;
+  items: { label: string; href: string }[];
 }) {
   return (
     <div>
@@ -86,5 +90,5 @@ function FooterCol({
         ))}
       </ul>
     </div>
-  )
+  );
 }

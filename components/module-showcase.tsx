@@ -1,68 +1,68 @@
-import { Video, Camera, Sparkles, ArrowUpRight } from "lucide-react"
-import { cn } from "@/lib/utils"
+"use client";
+import { Video, Camera, Sparkles, ArrowUpRight } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/context";
 
-const MODULES = [
-  {
-    badge: "Module C · Headliner",
-    title: "Flow Capture",
-    subtitle: "Recording → interactive prototype",
-    description:
-      "Drop in a screen recording. PixelForge extracts the underlying state machine, then generates a working React app — buttons that actually do things, modals that actually open, lists that actually update.",
-    icon: Video,
-    primary: true,
-    bullets: [
-      "Auto-detected states & transitions",
-      "Editable timeline — tweak any step",
-      "Optimistic updates & async states",
-      "Production React + Tailwind output",
-    ],
-  },
-  {
-    badge: "Module A · Foundation",
-    title: "Frame Reforge",
-    subtitle: "Screenshot / Figma → page",
-    description:
-      "The table-stakes design-to-code engine that powers Flow Capture under the hood. Use it standalone when all you need is a single high-fidelity screen.",
-    icon: Camera,
-    primary: false,
-    bullets: [
-      "Pixel-grade visual fidelity",
-      "Component-aware extraction",
-      "Tailwind / shadcn output",
-      "Playwright pixel-diff loop",
-    ],
-  },
-  {
-    badge: "Module B · Spark",
-    title: "Idea Foundry",
-    subtitle: "Keyword / mood → 9-up explorations",
-    description:
-      "Stuck on a blank canvas? Describe a vibe, get nine directions. Pick one, send it to Frame Reforge or Flow Capture to keep going.",
-    icon: Sparkles,
-    primary: false,
-    bullets: [
-      "9-grid style explorations",
-      "Mood + brand inputs",
-      "Hand-off to code modules",
-      "Free tier — top of funnel",
-    ],
-  },
-]
+type ModuleData = {
+  badge: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  icon: typeof Video | typeof Camera | typeof Sparkles;
+  primary: boolean;
+  bullets: string[];
+  learnMore?: string;
+};
 
 export function ModuleShowcase() {
+  const { t } = useI18n();
+
+  const MODULES: ModuleData[] = [
+    {
+      badge: t.modules.items.flowCapture.badge,
+      title: t.modules.items.flowCapture.title,
+      subtitle: t.modules.items.flowCapture.subtitle,
+      description: t.modules.items.flowCapture.description,
+      icon: Video,
+      primary: true,
+      bullets: t.modules.items.flowCapture.bullets,
+      learnMore: t.modules.items.flowCapture.learnMore,
+    },
+    {
+      badge: t.modules.items.frameReforge.badge,
+      title: t.modules.items.frameReforge.title,
+      subtitle: t.modules.items.frameReforge.subtitle,
+      description: t.modules.items.frameReforge.description,
+      icon: Camera,
+      primary: false,
+      bullets: t.modules.items.frameReforge.bullets,
+    },
+    {
+      badge: t.modules.items.ideaFoundry.badge,
+      title: t.modules.items.ideaFoundry.title,
+      subtitle: t.modules.items.ideaFoundry.subtitle,
+      description: t.modules.items.ideaFoundry.description,
+      icon: Sparkles,
+      primary: false,
+      bullets: t.modules.items.ideaFoundry.bullets,
+    },
+  ];
+
   return (
-    <section id="flow-capture" className="border-b border-border/60 bg-background">
+    <section
+      id="flow-capture"
+      className="border-b border-border/60 bg-background"
+    >
       <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
         <div className="mx-auto max-w-2xl text-center">
           <p className="font-mono text-xs uppercase tracking-wider text-primary">
-            Three modules. One workflow.
+            {t.modules.label}
           </p>
           <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight md:text-4xl">
-            Flow Capture leads. The rest support.
+            {t.modules.heading}
           </h2>
           <p className="mt-4 text-pretty leading-relaxed text-muted-foreground">
-            We&apos;re not building another design-to-code tool. Flow Capture is
-            the wedge. Frame Reforge and Idea Foundry round out the workflow.
+            {t.modules.description}
           </p>
         </div>
 
@@ -73,11 +73,11 @@ export function ModuleShowcase() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
-function ModuleCard({ module: m }: { module: (typeof MODULES)[number] }) {
-  const Icon = m.icon
+function ModuleCard({ module: m }: { module: ModuleData }) {
+  const Icon = m.icon;
   return (
     <article
       className={cn(
@@ -153,12 +153,12 @@ function ModuleCard({ module: m }: { module: (typeof MODULES)[number] }) {
         ))}
       </ul>
 
-      {m.primary && (
+      {m.primary && m.learnMore && (
         <div className="relative mt-7 flex items-center gap-1.5 font-mono text-xs text-primary">
-          Learn more
+          {m.learnMore}
           <ArrowUpRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </div>
       )}
     </article>
-  )
+  );
 }

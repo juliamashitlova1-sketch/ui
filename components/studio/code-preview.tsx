@@ -1,147 +1,132 @@
-'use client'
+"use client";
 
-import { useMemo } from 'react'
+import { useMemo } from "react";
 
 /**
- * In-browser React preview using Babel standalone to compile TSX to JS.
- * Renders the generated code inside a sandboxed iframe.
+ * In-browser React preview using Babel standalone.
+ * Renders generated code in a sandboxed iframe.
  */
-export function CodePreview({ files, projectName }: { files: { filename: string; content: string }[]; projectName?: string }) {
-  const previewHtml = useMemo(() => buildPreviewHtml(files, projectName), [files, projectName])
+export function CodePreview({
+  files,
+  projectName,
+}: {
+  files: { filename: string; content: string }[];
+  projectName?: string;
+}) {
+  const previewHtml = useMemo(
+    () => buildPreviewHtml(files, projectName),
+    [files, projectName],
+  );
 
-  if (!files.length) return null
+  if (!files.length) return null;
 
   return (
-    <div className="h-full w-full bg-white rounded-xl overflow-hidden border border-border">
+    <div
+      className="h-full w-full rounded-xl overflow-hidden border border-border bg-white"
+      style={{ minHeight: 400 }}
+    >
       <iframe
         srcDoc={previewHtml}
         className="h-full w-full"
-        sandbox="allow-scripts allow-same-origin"
-        title="Preview"
+        sandbox="allow-scripts"
+        title="Live Preview"
+        style={{ border: 0 }}
       />
     </div>
-  )
+  );
 }
 
-function buildPreviewHtml(files: { filename: string; content: string }[], projectName?: string): string {
-  // Find the main App component
-  const appFile = files.find(f => f.filename === 'App.tsx' || f.filename === 'App.jsx')
-  const appCode = appFile?.content || 'export default function App() { return <div>No App component found</div> }'
+function buildPreviewHtml(
+  files: { filename: string; content: string }[],
+  projectName?: string,
+): string {
+  const appFile = files.find((f) => f.filename === "App.tsx");
+  const appCode =
+    appFile?.content ||
+    "export default function App() { return <div>Hello</div> }";
 
-  // Collect all component code (minus App.tsx)
-  const components: { path: string; code: string }[] = []
-  for (const f of files) {
-    if (f.filename !== 'App.tsx' && f.filename.endsWith('.tsx')) {
-      components.push({ path: f.filename, code: f.content })
-    }
-  }
+  const componentFiles = files.filter(
+    (f) => f.filename !== "App.tsx" && f.filename.endsWith(".tsx"),
+  );
 
-  const componentImports = components
-    .map(c => {
-      const name = c.path.split('/').pop()?.replace('.tsx', '') || 'Unknown'
-      return `      <script data-component="${c.path}">
-// === ${c.path} ===
-${c.code}
-      </script>`
-    })
-    .join('\n')
+  const componentScripts = componentFiles
+    .map(
+      (f) =>
+        `<!-- ${f.filename} -->
+<script>
+try { ${f.content} } catch(e) { console.error("${f.filename}", e) }
+</script>`,
+    )
+    .join("\n");
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${projectName || 'PixelForge Preview'}</title>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <title>${projectName || "Preview"}</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: { extend: { colors: { border: '#333', background: '#111', foreground: '#f5f5f5', muted: '#666', primary: '#f59e0b' } } }
-    }
-  </script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    #root { min-height: 100vh; }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0a0a0a;color:#f5f5f5}
   </style>
 </head>
-<body>
-  <div id="root"></div>
+<body><div id="root"></div>
 
-  <script>window.process = { env: {} }</script>
+<script>
+// Minimal module polyfill for generated code
+window.__mod = {}
+function __def(name, init) { window.__mod[name] = init() }
+function __req(name) {
+  var m = window.__mod
+  var key = name.replace(/^@\\//, './').replace(/^lucide-react$/, 'lucide')
+  return m[key] || m['./'+key] || {}
+}
+</script>
 
-  <script>
-    // Simple module cache
-    window.__modules = {}
-    function __define(name, fn) {
-      window.__modules[name] = fn()
-    }
-    function __require(name) {
-      const mods = window.__modules
-      // Resolve aliases
-      const resolved = name
-        .replace(/^@\//, './')
-        .replace(/^lucide-react$/, 'lucide')
-        .replace(/^clsx$/, 'clsx')
-        .replace(/^tailwind-merge$/, 'tailwind-merge')
-        .replace(/^class-variance-authority$/, 'class-variance-authority')
-      return mods[resolved] || mods['./' + resolved] || {}
-    }
-  </script>
+<script>
+// shims for imports the generated code uses
+__def('clsx', function(){ return function(){ return Array.prototype.filter.call(arguments, Boolean).join(' ') } })
+__def('tailwind-merge', function(){ return function(){ return Array.prototype.filter.call(arguments, Boolean).join(' ') } })
+__def('class-variance-authority', function(){ return { cva: function(){ return function(){ return '' } } } })
+__def('lucide', function(){ return { X: 'X', Check: 'Check', ArrowRight: 'ArrowRight' } })
+__def('./lib/utils', function(){ return { cn: function(){ return Array.prototype.filter.call(arguments, Boolean).join(' ') } } })
+// shim for shadcn ui components
+__def('./components/ui/button', function(){
+  var React = window.React
+  return { Button: function(props){ return React.createElement('button', Object.assign({}, props, { className: 'px-4 py-2 rounded-lg bg-amber-500 text-white hover:bg-amber-600 transition '+ (props.className||'') }), props.children), default: this.Button } }
+})
+__def('./components/ui/input', function(){
+  var React = window.React
+  return { Input: function(props){ return React.createElement('input', Object.assign({}, props, { className: 'px-3 py-2 rounded-lg border border-gray-700 bg-gray-900 text-white '+ (props.className||'') })), default: this.Input } }
+})
+__def('./components/ui/label', function(){
+  var React = window.React
+  return { Label: function(props){ return React.createElement('label', Object.assign({}, props, { className: 'text-sm text-gray-400 '+ (props.className||'') }), props.children), default: this.Label } }
+})
+__def('./components/ui/card', function(){
+  var React = window.React
+  return { Card: function(props){ return React.createElement('div', Object.assign({}, props, { className: 'rounded-xl border border-gray-700 bg-gray-900 p-4 '+ (props.className||'') }), props.children), default: this.Card } }
+})
+</script>
 
-  <!-- Shims for common imports -->
-  <script>
-    __define('clsx', () => function clsx(...args) { return args.filter(Boolean).join(' ') })
-    __define('tailwind-merge', () => function twMerge(...args) { return args.filter(Boolean).join(' ') })
-    __define('class-variance-authority', () => ({ cva: () => () => '' }))
-    __define('lucide', () => ({ X: () => '', Check: () => '', ArrowRight: () => '', Loader2: () => '', Sparkles: () => '', Download: () => '' }))
-    __define('./lib/utils', () => { const cn = (...args) => args.filter(Boolean).join(' '); return { cn } })
-  </script>
+${componentScripts}
 
-  <!-- Components -->
-  <script>
-    // shim for @/components/ui/*
-    __define('./components/ui/button', () => {
-      function Button({ children, className, ...props }) {
-        return React.createElement('button', { className: 'px-4 py-2 rounded-lg bg-amber-500 text-white hover:bg-amber-600 transition ' + (className || ''), ...props }, children)
-      }
-      return { Button, default: Button }
-    })
-    __define('./components/ui/input', () => {
-      function Input({ className, ...props }) {
-        return React.createElement('input', { className: 'px-3 py-2 rounded-lg border border-gray-700 bg-gray-900 text-white ' + (className || ''), ...props })
-      }
-      return { Input, default: Input }
-    })
-    __define('./components/ui/label', () => {
-      function Label({ children, className, ...props }) {
-        return React.createElement('label', { className: 'text-sm text-gray-400 ' + (className || ''), ...props }, children)
-      }
-      return { Label, default: Label }
-    })
-  </script>
-
-${componentImports}
-
-  <!-- App -->
-  <script data-app>
+<script type="text/babel">
 ${appCode}
-  </script>
+</script>
 
-  <script>
-    Babel.transformScriptTags()
-  </script>
+<script>
+// Wait for Babel & Tailwind, then render
+setTimeout(function(){
+  Babel.transformScriptTags()
+  var App = window.__mod['./App']?.default || function(){ return React.createElement('div', null, 'App loaded') }
+  ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App))
+}, 100)
+</script>
 
-  <script type="text/babel" data-type="module">
-    // Collect exports from App
-    const appModule = window.__modules['./App']
-    const App = appModule?.default || appModule?.App || (() => React.createElement('div', null, 'No App component'))
-    const root = ReactDOM.createRoot(document.getElementById('root'))
-    root.render(React.createElement(App))
-  </script>
-</body>
-</html>`
+</body></html>`;
 }

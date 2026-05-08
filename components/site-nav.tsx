@@ -49,6 +49,12 @@ export function SiteNav() {
           >
             PRD
           </Link>
+          <Link
+            href="/studio"
+            className="text-sm text-primary transition-colors hover:text-primary/80 font-medium"
+          >
+            Studio
+          </Link>
         </nav>
 
         <div className="flex items-center gap-3">

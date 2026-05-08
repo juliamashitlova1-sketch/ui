@@ -4,6 +4,7 @@ import type { StateMachine, GeneratedCode, GenerationOptions } from "./types";
 export async function generateCode(
   machine: StateMachine,
   options: GenerationOptions,
+  frameUrls?: string[],
 ): Promise<GeneratedCode> {
   const stateDescriptions = machine.states
     .map(
@@ -26,6 +27,19 @@ ${stateDescriptions}
 
 ## Transitions (${machine.transitions.length}):
 ${transitionDescriptions}
+
+${
+  frameUrls && frameUrls.length > 0
+    ? `
+## Reference Screenshots
+Here are actual screenshots from the recording. Use them as visual reference:
+${frameUrls
+  .slice(0, 5)
+  .map((url, i) => `Screenshot ${i + 1}: ${url}`)
+  .join("\n")}
+`
+    : ""
+}
 
 ## Requirements:
 - Use React 19 + TypeScript + Tailwind CSS

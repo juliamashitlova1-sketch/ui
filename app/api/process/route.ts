@@ -33,16 +33,35 @@ function createSimulatedTransitions(statesCount: number) {
 }
 
 // ── AI-powered processing ──
-async function runAIPipeline(duration: number) {
+async function runAIPipeline(duration: number, projectId?: string) {
   try {
     const { segmentFrames } = await import("@/lib/ai/segmentation");
     const { labelTransitions, buildStateMachine } =
       await import("@/lib/ai/labeling");
+
+    // Try to get real frames from DB
+    let frameUrls: string[] = [];
+    if (projectId) {
+      const supabase = createServerClient();
+      const { data: frames } = await supabase
+        .from("frames")
+        .select("*")
+        .eq("project_id", projectId)
+        .order("order_index");
+      if (frames && frames.length > 0) {
+        frameUrls = frames.map((f) => f.storage_url);
+      }
+    }
+
+    // Fallback to placeholders if no real frames
+    if (frameUrls.length === 0) {
+      const timestamps = calculateSampleTimestamps(duration, 7, 60);
+      frameUrls = timestamps.map(
+        () => `https://picsum.photos/800/600?t=${Date.now()}`,
+      );
+    }
+
     const timestamps = calculateSampleTimestamps(duration, 7, 60);
-    // Use placeholder with timestamp embedded so AI has context
-    const frameUrls = timestamps.map(
-      () => `https://picsum.photos/800/600?t=${Date.now()}`,
-    );
     const states = await segmentFrames(frameUrls, timestamps);
     const transitions = await labelTransitions(states);
     const machine = buildStateMachine(states, transitions);
@@ -88,7 +107,7 @@ export async function POST(req: NextRequest) {
       .eq("id", projectId);
 
     // Try AI pipeline, fall back to simulation
-    let result = await runAIPipeline(duration);
+    let result = await runAIPipeline(duration, projectId);
     let source = "ai";
 
     if (!result) {

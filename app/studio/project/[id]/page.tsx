@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { Loader2, RefreshCw, Sparkles, Download } from "lucide-react";
 import { StudioNav } from "@/components/studio/studio-nav";
 import { Button } from "@/components/ui/button";
+import { CodePreview } from "@/components/studio/code-preview";
 
 export default function ProjectPage() {
   const { id } = useParams<{ id: string }>();
@@ -366,11 +367,16 @@ function TimelineEditor({
         )}
       </div>
 
-      {/* Generated Code */}
+      {/* Generated Code — Split View */}
       {codeFiles.length > 0 && (
         <div className="mt-12">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">Generated Code</h3>
+            <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
+              <span>◀ Code</span>
+              <span className="w-16 h-1 rounded-full bg-border" />
+              <span>Preview ▶</span>
+            </div>
             <Button
               onClick={handleDownloadAll}
               size="sm"
@@ -381,20 +387,30 @@ function TimelineEditor({
               Download All (.zip)
             </Button>
           </div>
-          <div className="rounded-2xl border border-border overflow-hidden">
-            {codeFiles.map((file: any) => (
-              <details
-                key={file.filename}
-                className="border-b border-border last:border-0"
-              >
-                <summary className="px-4 py-3 cursor-pointer font-mono text-sm hover:bg-muted/20">
-                  📄 {file.filename}
-                </summary>
-                <pre className="px-4 py-3 bg-background/60 overflow-x-auto text-xs font-mono leading-relaxed whitespace-pre-wrap">
-                  {file.content}
-                </pre>
-              </details>
-            ))}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Left: Code */}
+            <div className="rounded-2xl border border-border overflow-hidden max-h-[500px] overflow-y-auto">
+              {codeFiles.map((file: any) => (
+                <details
+                  key={file.filename}
+                  className="border-b border-border last:border-0"
+                >
+                  <summary className="px-4 py-3 cursor-pointer font-mono text-sm hover:bg-muted/20 sticky top-0 bg-background/90 backdrop-blur">
+                    📄 {file.filename}
+                  </summary>
+                  <pre className="px-4 py-3 bg-background/60 overflow-x-auto text-xs font-mono leading-relaxed whitespace-pre-wrap">
+                    {file.content}
+                  </pre>
+                </details>
+              ))}
+            </div>
+            {/* Right: Live Preview */}
+            <div
+              className="rounded-2xl border border-border overflow-hidden"
+              style={{ minHeight: 400 }}
+            >
+              <CodePreview files={codeFiles} projectName={project?.name} />
+            </div>
           </div>
         </div>
       )}

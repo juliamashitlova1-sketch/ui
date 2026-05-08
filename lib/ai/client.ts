@@ -1,94 +1,90 @@
-type AIModel = {
-  provider: 'openai' | 'anthropic'
-  apiKey: string
-  visionModel: string  // gpt-4o or claude-3-5-sonnet
-  reasoningModel: string  // gpt-4o or claude-3-5-sonnet
-}
+/**
+ * PixelForge AI Client — Zhipu GLM
+ *
+ * Uses Zhipu's OpenAI-compatible API endpoint.
+ * Models:
+ *   glm-4v       — Vision model for frame analysis
+ *   glm-4-flash  — Fast reasoning for transition labeling
+ *   glm-4-plus   — Powerful reasoning for code generation
+ *
+ * API Docs: https://open.bigmodel.cn/dev/api/normal-model/glm-4
+ */
 
-function getModel(): AIModel {
-  // Default to OpenAI, can override via env vars
-  const provider = (process.env.AI_PROVIDER || 'openai') as 'openai' | 'anthropic'
+const BASE_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
+const API_KEY = process.env.ZHIPU_API_KEY || "";
+
+function headers() {
   return {
-    provider,
-    apiKey: provider === 'openai'
-      ? process.env.OPENAI_API_KEY!
-      : process.env.ANTHROPIC_API_KEY!,
-    visionModel: provider === 'openai' ? 'gpt-4o' : 'claude-3-5-sonnet-20241022',
-    reasoningModel: provider === 'openai' ? 'gpt-4o' : 'claude-3-5-sonnet-20241022',
-  }
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${API_KEY}`,
+  };
 }
 
-export async function analyzeFrames(imageUrls: string[], prompt: string): Promise<string> {
-  const model = getModel()
-
-  if (model.provider === 'openai') {
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${model.apiKey}` },
-      body: JSON.stringify({
-        model: model.visionModel,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'text', text: prompt },
-            ...imageUrls.map(url => ({ type: 'image_url' as const, image_url: { url } }))
-          ]
-        }],
-        max_tokens: 4096,
-        temperature: 0.3,
-      })
-    })
-    const data = await res.json()
-    return data.choices[0].message.content
+export async function analyzeFrames(
+  imageUrls: string[],
+  prompt: string,
+): Promise<string> {
+  // Build messages with images for vision model
+  const content: any[] = [{ type: "text", text: prompt }];
+  for (const url of imageUrls) {
+    content.push({ type: "image_url", image_url: { url } });
   }
 
-  // Anthropic
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': model.apiKey, 'anthropic-version': '2023-06-01' },
+  const res = await fetch(BASE_URL, {
+    method: "POST",
+    headers: headers(),
     body: JSON.stringify({
-      model: model.visionModel,
+      model: "glm-4v",
+      messages: [{ role: "user", content }],
       max_tokens: 4096,
-      messages: [{
-        role: 'user',
-        content: [
-          { type: 'text', text: prompt },
-          ...imageUrls.map(url => ({ type: 'image' as const, source: { type: 'url' as const, url } }))
-        ]
-      }]
-    })
-  })
-  const data = await res.json()
-  return data.content[0].text
+      temperature: 0.3,
+    }),
+  });
+
+  const data = await res.json();
+  if (data.error) {
+    console.error("Zhipu vision error:", data.error);
+    throw new Error(data.error.message || "Vision model error");
+  }
+  return data.choices?.[0]?.message?.content || "";
 }
 
 export async function reason(prompt: string): Promise<string> {
-  const model = getModel()
-
-  if (model.provider === 'openai') {
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${model.apiKey}` },
-      body: JSON.stringify({
-        model: model.reasoningModel,
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 4096,
-        temperature: 0.2,
-      })
-    })
-    const data = await res.json()
-    return data.choices[0].message.content
-  }
-
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': model.apiKey, 'anthropic-version': '2023-06-01' },
+  const res = await fetch(BASE_URL, {
+    method: "POST",
+    headers: headers(),
     body: JSON.stringify({
-      model: model.reasoningModel,
+      model: "glm-4-flash",
+      messages: [{ role: "user", content: prompt }],
       max_tokens: 4096,
-      messages: [{ role: 'user', content: prompt }]
-    })
-  })
-  const data = await res.json()
-  return data.content[0].text
+      temperature: 0.2,
+    }),
+  });
+
+  const data = await res.json();
+  if (data.error) {
+    console.error("Zhipu reasoning error:", data.error);
+    throw new Error(data.error.message || "Reasoning model error");
+  }
+  return data.choices?.[0]?.message?.content || "";
+}
+
+export async function generate(prompt: string): Promise<string> {
+  const res = await fetch(BASE_URL, {
+    method: "POST",
+    headers: headers(),
+    body: JSON.stringify({
+      model: "glm-4-plus",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 8192,
+      temperature: 0.2,
+    }),
+  });
+
+  const data = await res.json();
+  if (data.error) {
+    console.error("Zhipu generation error:", data.error);
+    throw new Error(data.error.message || "Generation model error");
+  }
+  return data.choices?.[0]?.message?.content || "";
 }
